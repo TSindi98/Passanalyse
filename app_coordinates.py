@@ -55,7 +55,7 @@ if uploaded_file is not None:
                 color_mapping[value] = color
     
     # Erstelle dynamisch Filter für alle Spalten außer X, Y, X2, Y2
-    excluded_columns = ['X', 'Y', 'X2', 'Y2']
+    excluded_columns = ['X', 'Y', 'X2', 'Y2', 'Time']
     df_filtered = df.copy()  # Initialisiere df_filtered mit allen Daten
     for column in df.columns:
         if column not in excluded_columns:
