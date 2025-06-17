@@ -64,4 +64,4 @@ MIT License
 
 ## Beitragen
 
-Beiträge sind willkommen! Bitte erstellen Sie einen Pull Request für größere Änderungen. 
+Beiträge sind willkommen! Bitte erstellen Sie einen Pull Request für größere Änderungen.
