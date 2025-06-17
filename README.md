@@ -60,7 +60,7 @@ MIT License
 
 ## Autor
 
-[Ihr Name]
+[TSindi98]
 
 ## Beitragen
 
