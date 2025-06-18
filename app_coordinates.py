@@ -76,7 +76,13 @@ if uploaded_file is not None:
                     df_filtered = df_filtered[df_filtered[column] == selected_value]
     
     # Erstelle das Spielfeld
-    fig, ax = plt.subplots(figsize=(12, 8))
+    # Hole die Container-Breite von Streamlit
+    container_width = st.get_option("deprecation.showfileUploaderEncoding")
+    fig_width = 12  # Basis-Breite
+    fig_height = fig_width * (68/105)  # Verhältnis 105:68 beibehalten
+    
+    # Erstelle das Spielfeld mit responsiver Größe
+    fig, ax = plt.subplots(figsize=(fig_width, fig_height))
     
     # Spielfeldmaße (in Einheiten des Tagging-Tools)
     field_width = 105
@@ -91,30 +97,29 @@ if uploaded_file is not None:
     # Mittellinie (durchgehend)
     ax.plot([0, 0], [-field_height/2, field_height/2], 'w-', alpha=0.5)
     
-    # Mittelfeldkreis
-    center_circle = patches.Circle((0, 0), 10, fill=False, color='white', linewidth=1)
+    # Mittelfeldkreis (relativ zur Feldgröße)
+    center_circle_radius = field_width * 0.095  # Etwa 10% der Feldbreite
+    center_circle = patches.Circle((0, 0), center_circle_radius, fill=False, color='white', linewidth=1)
     ax.add_patch(center_circle)
     
-    # Strafräume
-    penalty_area_width = 16.5
-    penalty_area_height = 40.32
+    # Strafräume (relativ zur Feldgröße)
+    penalty_area_width = field_width * 0.157  # Etwa 16.5m
+    penalty_area_height = field_height * 0.593  # Etwa 40.32m
     ax.add_patch(patches.Rectangle((-field_width/2, -penalty_area_height/2), penalty_area_width, penalty_area_height, 
                                  fill=False, color='white', linewidth=1))
     ax.add_patch(patches.Rectangle((field_width/2 - penalty_area_width, -penalty_area_height/2), 
                                  penalty_area_width, penalty_area_height, fill=False, color='white', linewidth=1))
     
-    # Strafraumkreise (nur außerhalb des Strafraums sichtbar)
-    Elfmeterpunkt_links = [-field_width/2 + 11, 0]
-    Elfmeterpunkt_rechts = [field_width/2 - 11.1, 0]
-    penalty_arc_radius = 9.15
+    # Strafraumkreise (relativ zur Feldgröße)
+    Elfmeterpunkt_links = [-field_width/2 + field_width * 0.105, 0]  # Etwa 11m
+    Elfmeterpunkt_rechts = [field_width/2 - field_width * 0.106, 0]  # Etwa 11.1m
+    penalty_arc_radius = field_width * 0.087  # Etwa 9.15m
     
     # Berechne den Winkel für den Schnittpunkt mit dem Strafraum
-    # Der Kreis schneidet den Strafraum bei x = -field_width/2 + penalty_area_width
-    # Für den linken Strafraum:
     x_intersect = -field_width/2 + penalty_area_width
-    dx = x_intersect - Elfmeterpunkt_links[0]  # Abstand vom Elfmeterpunkt zum Schnittpunkt
-    angle_intersect = np.arccos(dx / penalty_arc_radius)  # Winkel in Radiant
-    angle_intersect_deg = np.degrees(angle_intersect)  # Winkel in Grad
+    dx = x_intersect - Elfmeterpunkt_links[0]
+    angle_intersect = np.arccos(dx / penalty_arc_radius)
+    angle_intersect_deg = np.degrees(angle_intersect)
     
     # Linker Strafraumkreis
     arc_left = patches.Arc(Elfmeterpunkt_links, 
@@ -130,16 +135,16 @@ if uploaded_file is not None:
                           color='white', linewidth=1)
     ax.add_patch(arc_right)
     
-    # Torräume
-    goal_area_width = 6
-    goal_area_height = 20
+    # Torräume (relativ zur Feldgröße)
+    goal_area_width = field_width * 0.057  # Etwa 6m
+    goal_area_height = field_height * 0.294  # Etwa 20m
     ax.add_patch(patches.Rectangle((-field_width/2, -goal_area_height/2), goal_area_width, goal_area_height, 
                                  fill=False, color='white', linewidth=1))
     ax.add_patch(patches.Rectangle((field_width/2 - goal_area_width, -goal_area_height/2), 
                                  goal_area_width, goal_area_height, fill=False, color='white', linewidth=1))
     
-    # Elfmeterpunkte
-    penalty_spot_radius = 0.3  # Radius des Elfmeterpunktes
+    # Elfmeterpunkte (relativ zur Feldgröße)
+    penalty_spot_radius = field_width * 0.003  # Etwa 0.3m
     penalty_spot_left = patches.Circle(Elfmeterpunkt_links, penalty_spot_radius, 
                                      fill=True, color='white', linewidth=1)
     penalty_spot_right = patches.Circle(Elfmeterpunkt_rechts, penalty_spot_radius, 
@@ -147,12 +152,13 @@ if uploaded_file is not None:
     ax.add_patch(penalty_spot_left)
     ax.add_patch(penalty_spot_right)
     
-# Mittelpunkt
-    center_circle = patches.Circle((0, 0), 0.3, 
-                                      fill=True, color='white', linewidth=1)
+    # Mittelpunkt (relativ zur Feldgröße)
+    center_spot_radius = field_width * 0.003  # Etwa 0.3m
+    center_circle = patches.Circle((0, 0), center_spot_radius, 
+                                 fill=True, color='white', linewidth=1)
     ax.add_patch(center_circle)
 
-    # Zeichne die Pässe
+    # Zeichne die Pässe mit responsiven Größen
     for _, row in df_filtered.iterrows():
         # Startkoordinaten
         start_x = row['X']
@@ -185,15 +191,16 @@ if uploaded_file is not None:
         if is_high_pass:
             color = '#FFFF00'
 
-
-
-
         # Setze Transparenz
         alpha = 0.4
-        line_width = 2  # Erhöhte Linienbreite
+        
+        # Responsive Größen für Punkte und Linien
+        start_point_size = field_width * 0.067  # Etwa 7 Einheiten
+        end_point_size = field_width * 0.105    # Etwa 11 Einheiten
+        line_width = field_width * 0.019        # Etwa 2 Einheiten
         
         # Zeichne den Startpunkt (kleiner)
-        ax.plot(start_x, start_y, 'o', color=color, markersize=7, alpha=alpha)
+        ax.plot(start_x, start_y, 'o', color=color, markersize=start_point_size, alpha=alpha)
         
         # Prüfe, ob Endkoordinaten vorhanden sind
         if 'X2' in row and 'Y2' in row and not pd.isna(row['X2']) and not pd.isna(row['Y2']):
@@ -212,7 +219,6 @@ if uploaded_file is not None:
             
             if is_high_pass:
                 # Für hohe Pässe: gebogene Linie
-                # Zeichne die durchgehende gebogene Linie
                 ax.annotate("",
                            xy=(end_x, end_y), xycoords='data',
                            xytext=(start_x, start_y), textcoords='data',
@@ -221,24 +227,22 @@ if uploaded_file is not None:
                                          alpha=alpha,
                                          connectionstyle="arc3,rad=0.3",
                                          shrinkA=0, shrinkB=0,
-                                         mutation_scale=17),  # Größe der Pfeilspitze
+                                         mutation_scale=field_width * 0.162),  # Responsive Pfeilspitze
                            )
             else:
                 # Für normale Pässe: gerade Linie
-                # Zeichne die durchgehende Linie
                 ax.plot([start_x, end_x], [start_y, end_y], color=color, linewidth=line_width, alpha=alpha)
                 
                 # Berechne die Position der Pfeilspitze
-                arrow_pos = 0.5  # Position auf der Linie (0 bis 1)
+                arrow_pos = 0.5
                 arrow_x = start_x + (end_x - start_x) * arrow_pos
                 arrow_y = start_y + (end_y - start_y) * arrow_pos
                 
-                # Berechne die Pfeilspitzen-Punkte basierend auf der Passrichtung
-                arrow_length = 0.5  # Länge der Pfeilspitze
+                # Responsive Pfeilspitze
+                arrow_length = field_width * 0.005
                 arrow_dx = np.cos(angle) * arrow_length
                 arrow_dy = np.sin(angle) * arrow_length
                 
-                # Füge nur die Pfeilspitze in der Mitte hinzu
                 ax.annotate("",
                            xy=(arrow_x + arrow_dx, arrow_y + arrow_dy), xycoords='data',
                            xytext=(arrow_x - arrow_dx, arrow_y - arrow_dy), textcoords='data',
@@ -249,19 +253,21 @@ if uploaded_file is not None:
                            )
             
             # Zeichne den Endpunkt (größer)
-            ax.plot(end_x, end_y, 'o', color=color, markersize=11, alpha=alpha)
+            ax.plot(end_x, end_y, 'o', color=color, markersize=end_point_size, alpha=alpha)
         else:
-            # Wenn keine Endkoordinaten vorhanden sind (z.B. bei Schüssen),
-            # zeichne nur einen größeren Punkt
-            ax.plot(start_x, start_y, 'o', color=color, markersize=11, alpha=alpha)
+            # Wenn keine Endkoordinaten vorhanden sind
+            ax.plot(start_x, start_y, 'o', color=color, markersize=end_point_size, alpha=alpha)
     
     # Setze Achsen-Limits und entferne Achsen
     ax.set_xlim(-field_width/2, field_width/2)
     ax.set_ylim(-field_height/2, field_height/2)
     ax.axis('off')
     
+    # Mache das Diagramm responsiv
+    fig.tight_layout()
+    
     # Zeige das Diagramm
-    st.pyplot(fig)
+    st.pyplot(fig, use_container_width=True)
     plt.close()
     
     # Statistiken
