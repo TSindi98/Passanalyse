@@ -37,7 +37,7 @@ if uploaded_file is not None:
     st.sidebar.header("Farb-Zuordnung")
     color_column = st.sidebar.selectbox(
         "Spalte für Farb-Zuordnung auswählen",
-        [col for col in df.columns if col not in ['X', 'Y', 'X2', 'Y2']]
+        [col for col in df.columns if col not in ['X', 'Y', 'X2', 'Y2', 'Time']]
     )
     
     # Erstelle Farb-Auswahl für jeden einzigartigen Wert
@@ -47,7 +47,7 @@ if uploaded_file is not None:
         for value in unique_values:
             if not pd.isna(value):  # Überspringe NaN-Werte
                 # Standardfarben als Hex-Codes
-                default_color = '#0000FF' if value == 'Erfolgreich' else '#FF0000' if value == 'Nicht erfolgreich' else '#FFFF00'
+                default_color = '#00CD00' if value == 'Erfolgreich' else '#00CD00' if value == 'Nicht erfolgreich' else '#FFFF00'
                 color = st.sidebar.color_picker(
                     f"Farbe für '{value}'",
                     value=default_color
@@ -157,25 +157,37 @@ if uploaded_file is not None:
         # Startkoordinaten
         start_x = row['X']
         start_y = row['Y']
-        
-        # Prüfe, ob es sich um einen hohen Pass handelt
-        is_high_pass = False
-        if 'Passhöhe' in row and isinstance(row['Passhöhe'], str):
-            is_high_pass = 'hoch' in row['Passhöhe'].lower()
-        
-        # Bestimme die Farbe
-        color = '#0000FF'  # Standardfarbe (blau)
-        
-        # Prüfe zuerst die Farb-Zuordnung
+
+        # Standardfarbe (grün)
+        color = '#00CD00'
+
+        # Prüfe zuerst die Farb-Zuordnung aus der Sidebar
         if color_column and color_column in row:
             value = row[color_column]
             if value in color_mapping:
                 color = color_mapping[value]
         
+            
+        # Prüfe, ob es sich um einen nicht erfolgreichen Pass handelt
+        is_Fehlpass = False
+        if 'Outcome' in row and isinstance(row['Outcome'], str):
+            is_Fehlpass = 'nicht erfolgreich' in row['Outcome'].lower()
+            
+        # Wenn es ein nicht erfolgreicher Pass ist, überschreibe die Farbe mit Rot
+        if is_Fehlpass:
+            color = '#FF0000'
+
+        is_high_pass = False
+        if 'Passhöhe' in row and isinstance(row['Passhöhe'], str):
+            is_high_pass = 'hoch' in row['Passhöhe'].lower()
+        
         # Wenn es ein hoher Pass ist, überschreibe die Farbe mit Gelb
         if is_high_pass:
             color = '#FFFF00'
-        
+
+
+
+
         # Setze Transparenz
         alpha = 0.4
         line_width = 2  # Erhöhte Linienbreite
