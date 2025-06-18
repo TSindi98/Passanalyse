@@ -76,8 +76,7 @@ if uploaded_file is not None:
                     df_filtered = df_filtered[df_filtered[column] == selected_value]
     
     # Erstelle das Spielfeld
-    # Hole die Container-Breite von Streamlit
-    container_width = st.get_option("deprecation.showfileUploaderEncoding")
+    # Feste Basis-Größe für das Spielfeld
     fig_width = 12  # Basis-Breite
     fig_height = fig_width * (68/105)  # Verhältnis 105:68 beibehalten
     
